@@ -4,6 +4,9 @@ import './App.css'
 function BirdName(props: { id: string, name: string }) {
   const {attributes, listeners, setNodeRef, transform} = useDraggable({
     id: `${props.id}`,
+    data: {
+      name: props.name
+    }
   });
   const style = transform ? {
     transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
@@ -39,6 +42,9 @@ function BirdBank() {
 function BirdImg(props: { id: string, img: string}) {
   const {isOver, setNodeRef} = useDroppable({
     id: `${props.id}`,
+    data: {
+      name: props.img
+    }
   });
   const style = {
     color: isOver ? 'green' : undefined,
@@ -53,7 +59,12 @@ function BirdImg(props: { id: string, img: string}) {
 }
 
 function BirdBoard() {
-  const board: string[][] = Array.from({length: 3}).map(() => new Array(3).fill('elem'));
+  const board: string[][] = Array.from({ length: 3 }).map(() => new Array(3));
+  for(let i = 0; i < board.length; i++) {
+    for(let j = 0; j < board[i].length; j++) {
+      board[i][j] = `bird::${(i * 3) + j}`;
+    }
+  }
   return (
     <>
       {board.map((row, rind) => (
@@ -69,9 +80,17 @@ function BirdBoard() {
 
 function App() {
 
+  function handleDragEnd(event: any) {
+    const {active, over} = event;
+
+    if (over && active.data.name === over.data.name) {
+      console.log('match');
+    }
+  }
+
   return (
     <>
-      <DndContext>
+      <DndContext onDragEnd={handleDragEnd}>
         <div className={'container'}>
           <BirdBoard />
           <BirdBank />
