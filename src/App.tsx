@@ -1,4 +1,4 @@
-import { DndContext, useDraggable, useDroppable } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, useDraggable, useDroppable } from '@dnd-kit/core';
 import './App.css'
 
 function BirdName(props: { id: string, name: string }) {
@@ -29,7 +29,7 @@ function BirdBank() {
           {birds.map((row, rind) => (
             <tr key={`bird-${rind}`}>
               {row.map((col, cind) => (
-                <BirdName id={`bird-${rind}-${cind}`} name={col} />
+                <BirdName key={`bird-${rind}-${cind}`} id={`bird-${rind}-${cind}`} name={col} />
               ))}
             </tr>
           ))}
@@ -47,7 +47,7 @@ function BirdImg(props: { id: string, img: string}) {
     }
   });
   const style = {
-    color: isOver ? 'green' : undefined,
+    opacity: isOver ? '0.5' : undefined,
   };
   return (
     <>
@@ -58,19 +58,14 @@ function BirdImg(props: { id: string, img: string}) {
   );
 }
 
-function BirdBoard() {
-  const board: string[][] = Array.from({ length: 3 }).map(() => new Array(3));
-  for(let i = 0; i < board.length; i++) {
-    for(let j = 0; j < board[i].length; j++) {
-      board[i][j] = `bird::${(i * 3) + j}`;
-    }
-  }
+function BirdBoard(props: {board: string[][]}) {
+  const board = props.board;
   return (
     <>
       {board.map((row, rind) => (
         <div className={'row'} key={rind}>
           {row.map((col, cind) => (
-            <BirdImg id={`${rind}-${cind}`} img={col} />
+            <BirdImg key={`${rind}-${cind}`} id={`${rind}-${cind}`} img={col} />
           ))}
         </div>
       ))} 
@@ -80,19 +75,38 @@ function BirdBoard() {
 
 function App() {
 
-  function handleDragEnd(event: any) {
+  const board: string[][] = Array.from({ length: 3 }).map(() => new Array(3));
+  for(let i = 0; i < board.length; i++) {
+    for(let j = 0; j < board[i].length; j++) {
+      board[i][j] = `bird::${(i * 3) + j}`;
+    }
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
     const {active, over} = event;
 
-    if (over && active.data.name === over.data.name) {
-      console.log('match');
+    const selected = active.data.current?.name;
+    const target = over?.data.current?.name;
+
+    const dropped = document.getElementById(`${over?.id}`);
+    if (over && selected === target) {
+      dropped?.setAttribute('style', 'color: green;');
+    } else {
+      dropped?.setAttribute('style', 'color: red;');
+      setTimeout(() => dropped?.setAttribute('style', ''), 1000);
     }
+
+    // TODO: evaluate game state
+
+    // n! / ((n-r!) * r!) => 9! / (6! * 3!) => 9 * 56 / 6 => 3 * 56 = 168
+    // combinations.some(comb => curState.includes(comb))
   }
 
   return (
     <>
       <DndContext onDragEnd={handleDragEnd}>
         <div className={'container'}>
-          <BirdBoard />
+          <BirdBoard board={board} />
           <BirdBank />
         </div>
       </DndContext>

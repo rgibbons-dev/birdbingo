@@ -15,3 +15,6 @@
         - so droppable is no longer draggable
     - only so many attempts to drag and drop
         - so you can't just drag a bird to every square
+- to do the matching, i needed to use the active and over objects
+    - these are specified by the DragEndEvent
+    - so when i drop it
